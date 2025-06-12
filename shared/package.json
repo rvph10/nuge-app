@@ -1,0 +1,19 @@
+{
+  "name": "@nuge/shared",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json}\""
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    "./types/*": "./types/*",
+    "./utils/*": "./utils/*",
+    "./constants": "./constants/index.ts"
+  }
+}

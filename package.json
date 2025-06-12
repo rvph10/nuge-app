@@ -1,0 +1,58 @@
+{
+  "name": "nuge-app",
+  "version": "1.0.0",
+  "description": "Nuge - Mobile app for locating nomadic food vendors",
+  "private": true,
+  "workspaces": [
+    "mobile",
+    "web",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,yaml,yml}\"",
+    "format:mobile": "prettier --write \"mobile/**/*.{js,jsx,ts,tsx,json}\"",
+    "format:web": "prettier --write \"web/**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:shared": "prettier --write \"shared/**/*.{js,jsx,ts,tsx,json}\"",
+    "mobile:dev": "npm run start --workspace=mobile",
+    "mobile:android": "npm run android --workspace=mobile",
+    "mobile:ios": "npm run ios --workspace=mobile",
+    "web:dev": "npm run dev --workspace=web",
+    "web:build": "npm run build --workspace=web",
+    "web:start": "npm run start --workspace=web",
+    "shared:type-check": "npm run type-check --workspace=shared",
+    "api:dev": "cd api && make dev",
+    "api:test": "cd api && make test",
+    "api:format": "cd api && python -m black src/ && python -m isort src/",
+    "api:lint": "cd api && python -m flake8 src/ && python -m mypy src/",
+    "supabase:start": "npx supabase start",
+    "supabase:stop": "npx supabase stop",
+    "supabase:reset": "npx supabase db reset",
+    "supabase:migration:new": "npx supabase migration new",
+    "supabase:migration:up": "npx supabase migration up",
+    "supabase:gen-types": "npx supabase gen types typescript --local > shared/types/supabase.ts",
+    "turbo:clean": "turbo clean",
+    "install:all": "npm install && npm run install:mobile && npm run install:web",
+    "install:mobile": "cd mobile && npm install",
+    "install:web": "cd web && npm install",
+    "install:api": "cd api && uv sync"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.3.7",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.7",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "packageManager": "npm@10.9.2"
+}

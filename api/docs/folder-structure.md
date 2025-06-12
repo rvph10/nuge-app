@@ -1,6 +1,7 @@
 # supafast Folder Structure
 
-This document outlines the folder structure of the supafast project to help developers navigate the codebase efficiently.
+This document outlines the folder structure of the supafast project to help developers navigate the
+codebase efficiently.
 
 ```
 supafast/

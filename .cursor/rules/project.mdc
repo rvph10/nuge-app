@@ -1,0 +1,242 @@
+---
+description: 
+globs: **/*
+alwaysApply: false
+---
+# Nuge Project - Cursor Rules
+
+## Project Context
+
+You are working on **Nuge**, a mobile application for locating nomadic food vendors. This includes food trucks, mobile merchants, butchers in trucks, ice cream vendors, and any mobile food commerce.
+
+**Key Features:**
+- Vendors publish their location once installed (not real-time tracking)
+- Interactive map with vendor visualization  
+- Order management and rating system
+- Subscription system for preferred vendors
+- Multi-language support (French, Dutch, English)
+
+## Technology Stack
+
+### Backend
+- **Framework:** FastAPI (Python)
+- **Database:** Supabase (PostgreSQL + PostGIS for geospatial)
+- **Cache:** Redis
+- **Authentication:** Supabase Auth
+- **Real-time:** WebSockets FastAPI + Supabase Realtime
+- **Geospatial:** PostGIS + Shapely + GeoAlchemy2
+- **Deployment:** Railway
+
+### Frontend Mobile
+- **Framework:** React Native
+- **Maps:** MapLibre with react-map-gl
+- **Styling:** NativeWind (Tailwind for RN)
+- **State:** Redux Toolkit
+- **API:** React Query
+- **Platforms:** Android and iOS only
+
+### Frontend Landing
+- **Framework:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS
+- **Forms:** React Hook Form + Zod
+- **Email:** Resend or SendGrid
+- **Deployment:** Vercel
+
+### Shared
+- **Types:** TypeScript (shared across all projects)
+- **Package Manager:** npm workspaces
+
+## Core Development Principles
+
+### Code Quality Standards
+- Write clean, modular, and testable code
+- Follow TypeScript strict mode everywhere
+- Use meaningful variable and function names in English
+- Implement proper error handling with early returns
+- Add comprehensive JSDoc comments for complex functions
+- Prioritize code readability over cleverness
+
+### Architecture Patterns
+- Follow the existing monorepo structure with shared types
+- Keep components small and focused on single responsibility
+- Use service layer pattern in backend for business logic
+- Implement proper separation of concerns across layers
+- Follow REST API conventions for backend endpoints
+
+### Type Safety Requirements
+- Enable TypeScript strict mode in all projects
+- Use interfaces over types for object definitions
+- Avoid `any` type - prefer `unknown` or proper typing
+- Define proper return types for all functions
+- Use discriminated unions for complex state management
+
+### Error Handling Best Practices
+- Use guard clauses to avoid deeply nested conditionals
+- Handle errors at the beginning of functions
+- Implement proper error boundaries in React components
+- Use consistent error response format in API
+- Log errors appropriately with context information
+
+## Technology-Specific Guidelines
+
+### FastAPI Backend
+- Use dependency injection for database connections
+- Implement proper Pydantic models for request/response validation
+- Use async/await for all database operations
+- Follow RESTful conventions for API endpoints
+- Implement proper CORS configuration for frontend integration
+- Use environment variables for all configuration
+- Structure routes logically by feature/domain
+
+### React Native Development
+- Use functional components with hooks exclusively
+- Implement proper keyboard avoiding views for forms
+- Use Formik + Yup for form handling and validation
+- Follow consistent styling with NativeWind
+- Implement proper navigation structure with type safety
+- Handle platform-specific differences when necessary
+- Use proper image optimization and loading states
+
+### Next.js Landing
+- Use App Router file-based routing conventions
+- Implement proper SEO optimization with metadata
+- Use Server Components when possible for performance
+- Implement proper form validation with React Hook Form + Zod
+- Follow responsive design principles
+- Optimize images and implement proper loading states
+
+### Database & Geospatial
+- Use PostGIS geography(POINT) type for locations
+- Implement spatial indexes (GIST) for query optimization
+- Use Shapely for geometric calculations in Python
+- Follow proper geographic coordinate system (WGS84)
+- Implement efficient proximity queries with spatial operators
+
+### State Management
+- Use Redux Toolkit for complex state management
+- Keep state normalized and avoid deep nesting
+- Implement proper loading and error states
+- Use React Query for server state management
+- Follow immutable update patterns
+
+## Naming Conventions
+
+### General
+- **Variables/Functions:** camelCase (`getUserLocation`, `isVendorActive`)
+- **Components:** PascalCase (`VendorCard`, `MapContainer`)
+- **Files:** kebab-case (`vendor-service.py`, `map-container.tsx`)
+- **Directories:** kebab-case (`user-profile`, `vendor-management`)
+- **Constants:** SCREAMING_SNAKE_CASE (`API_BASE_URL`, `MAX_SEARCH_RADIUS`)
+
+### Database
+- **Tables:** snake_case (`food_vendors`, `user_preferences`)
+- **Columns:** snake_case (`created_at`, `vendor_type`)
+- **Indexes:** descriptive names (`idx_vendors_location_gist`)
+
+## Performance Considerations
+
+### Frontend
+- Implement proper image lazy loading and optimization
+- Use React.memo for expensive components
+- Implement proper list virtualization for large datasets
+- Optimize map rendering with clustering for many markers
+- Use proper caching strategies with React Query
+
+### Backend
+- Implement Redis caching for frequently accessed data
+- Use database connection pooling
+- Implement proper pagination for list endpoints
+- Use spatial indexes for geographic queries
+- Implement rate limiting for public endpoints
+
+### Mobile-Specific
+- Optimize bundle size and implement code splitting
+- Use proper image formats and sizes for different devices
+- Implement offline-first strategies where applicable
+- Handle poor network conditions gracefully
+
+## Security Guidelines
+
+### Authentication & Authorization
+- Use Supabase Auth for user management
+- Implement proper JWT token validation
+- Use role-based access control (RBAC)
+- Validate all inputs server-side
+- Implement proper CORS policies
+
+### Data Protection
+- Follow GDPR compliance for user data
+- Implement proper data encryption at rest
+- Use HTTPS for all communications
+- Sanitize all user inputs
+- Implement proper logging without sensitive data
+
+## Testing Standards
+
+### Backend Testing
+- Write unit tests for all service layer functions
+- Use pytest for Python testing
+- Mock external dependencies properly
+- Test edge cases and error conditions
+- Aim for high test coverage on business logic
+
+### Frontend Testing
+- Write component tests for complex UI logic
+- Use Jest and React Testing Library
+- Test user interactions and state changes
+- Mock API calls in tests
+- Test responsive design across viewports
+
+## Git & Development Workflow
+
+### Commit Conventions
+- Use Conventional Commits format
+- Keep commit messages under 60 characters for subject
+- Use descriptive commit bodies for complex changes
+- Reference issue numbers when applicable
+
+### Branch Strategy
+- Use feature branches for all development
+- Keep branches focused and short-lived
+- Use descriptive branch names (`feature/vendor-rating-system`)
+- Rebase before merging to maintain clean history
+
+## Business Logic Reminders
+
+### Vendor Management
+- Vendors publish location manually when installed
+- Support multiple vendor types (food trucks, mobile butchers, etc.)
+- Implement proper vendor verification and approval process
+- Handle vendor availability status (active/inactive)
+
+### Pricing Model
+- Free for consumers
+- €39.99/month subscription for vendors (€29.99 promotional)
+- 5% + €0.30 transaction fee (3% promotional)
+- Clear separation between subscription and transaction fees
+
+### Geographic Focus
+- Support multiple languages (FR, NL, EN)
+- Use appropriate coordinate systems for geography
+- Consider local regulations and business practices
+
+## File References
+
+When working with the codebase, reference these key files:
+- `README.md` for project overview
+- `package.json` files for dependencies and scripts
+- `tsconfig.json` for TypeScript configuration
+- Environment files (`.env.example`) for configuration options
+- Database migration files for schema understanding
+
+## Communication Style
+
+- Be concise and direct in code comments
+- Use clear, descriptive variable names that explain intent
+- Write helpful error messages for users and developers
+- Document complex business logic with inline comments
+- Keep API documentation up-to-date with changes
+
+---
+
+**Remember:** This is a food vendor localization platform. Always consider the multilingual aspect and local business practices when implementing features.

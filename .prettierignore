@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+.next/
+.turbo/
+.expo/
+
+# Generated files
+*.generated.*
+*-generated.*
+coverage/
+.nyc_output/
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+uv.lock
+
+# Python files
+*.pyc
+__pycache__/
+*.egg-info/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Specific file types that shouldn't be formatted
+*.min.js
+*.min.css
+*.bundle.js
+
+# Documentation that has specific formatting
+CHANGELOG.md
+LICENSE
+
+# Supabase generated files
+supabase/types/
+shared/types/supabase.ts 

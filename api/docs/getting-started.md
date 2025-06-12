@@ -53,8 +53,8 @@ Where
 
 - **SUPABASE_URL** is retrieved from `Project Settings > API > Project URL > URL`.
 - **SUPABASE_KEY** is retrieved from `Project Settings > API > Project API Keys > anon public`.
-- **SUPABASE_JWT_SECRET_KEY** is retrieved from `Project Settings > API > JWT Settings > JWT Secret`.
-  **SUPABASE_DB_CONN_STR** is retrieved by:
+- **SUPABASE_JWT_SECRET_KEY** is retrieved from
+  `Project Settings > API > JWT Settings > JWT Secret`. **SUPABASE_DB_CONN_STR** is retrieved by:
   - Pressing the connect button next to your project name.
   - **If running your server locally:**
     - Select **Session pooler**.
@@ -67,9 +67,11 @@ Where
 
 ### Stripe
 
-- **STRIPE_API_KEY** is retrieved from your Stripe Dashboard under `Developers > API Keys`. Use the **Secret Key**.
+- **STRIPE_API_KEY** is retrieved from your Stripe Dashboard under `Developers > API Keys`. Use the
+  **Secret Key**.
 - **STRIPE_WEBHOOK_SECRET**:
-  - **Option 1**: Retrieve it from your Stripe Dashboard under `Developers > Webhooks`. After creating a webhook endpoint, copy the **Signing Secret**.
+  - **Option 1**: Retrieve it from your Stripe Dashboard under `Developers > Webhooks`. After
+    creating a webhook endpoint, copy the **Signing Secret**.
   - **Option 2**: When running locally, you can retrieve it using the Stripe CLI by running:
     ```bash
     stripe listen --print-secret
@@ -78,7 +80,8 @@ Where
 
 ### Step 4: Run Migrations
 
-Once the database is connected it's time to run the initial database migration to create the Payments table:
+Once the database is connected it's time to run the initial database migration to create the
+Payments table:
 
 ```bash
 uv run alembic upgrade head
