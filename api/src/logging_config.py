@@ -101,18 +101,19 @@ class ColoredConsoleFormatter(logging.Formatter):
     RESET = '\033[0m'
     
     def format(self, record: logging.LogRecord) -> str:
-        """Format log record with colors for console output."""
+        """Format log record with colors and proper structure."""
         color = self.COLORS.get(record.levelname, '')
         reset = self.RESET
         
-        formatted_time = datetime.fromtimestamp(record.created).strftime('%H:%M:%S')
-        
+        # Format: [TIME] LEVEL module:function:line - message
         log_format = (
-            f"{color}[{formatted_time}] {record.levelname:8} "
+            f"[{self.formatTime(record, self.datefmt)}] "
+            f"{color}{record.levelname:8}{reset} "
             f"{record.name}:{record.funcName}:{record.lineno}{reset} - {record.getMessage()}"
         )
         
-        if record.exc_info:
+        # Handle exception info properly - check if it's not just a boolean
+        if record.exc_info and record.exc_info is not True:
             log_format += f"\n{self.formatException(record.exc_info)}"
         
         return log_format

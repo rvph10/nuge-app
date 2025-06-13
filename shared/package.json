@@ -4,6 +4,7 @@
   "main": "index.ts",
   "types": "index.ts",
   "scripts": {
+    "dev": "tsc --noEmit --watch",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json}\""

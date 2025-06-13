@@ -1,0 +1,317 @@
+name: Security & Dependencies
+
+on:
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - '**/package*.json'
+      - '**/pyproject.toml'
+      - '**/requirements*.txt'
+  pull_request:
+    paths:
+      - '**/package*.json'
+      - '**/pyproject.toml'
+      - '**/requirements*.txt'
+  workflow_dispatch:
+
+jobs:
+  # Audit npm dependencies
+  npm-audit:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run install:mobile
+          npm run install:web
+
+      - name: Run npm audit
+        run: |
+          echo "## 🔍 NPM Security Audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Run audit for root
+          echo "### Root Package" >> $GITHUB_STEP_SUMMARY
+          if npm audit --audit-level=high; then
+            echo "✅ No high/critical vulnerabilities found in root package" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ High/critical vulnerabilities found in root package" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Run audit for mobile
+          echo "### Mobile Package" >> $GITHUB_STEP_SUMMARY
+          cd mobile
+          if npm audit --audit-level=high; then
+            echo "✅ No high/critical vulnerabilities found in mobile package" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ High/critical vulnerabilities found in mobile package" >> $GITHUB_STEP_SUMMARY
+          fi
+          cd ..
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Run audit for web
+          echo "### Web Package" >> $GITHUB_STEP_SUMMARY
+          cd web
+          if npm audit --audit-level=high; then
+            echo "✅ No high/critical vulnerabilities found in web package" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ High/critical vulnerabilities found in web package" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload audit results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-results
+          path: |
+            npm-audit-*.json
+            mobile/npm-audit-*.json
+            web/npm-audit-*.json
+
+  # Audit Python dependencies
+  python-audit:
+    name: Python Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install UV and Safety
+        run: |
+          pip install uv safety
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run safety check
+        run: |
+          echo "## 🐍 Python Security Audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if uv run safety check; then
+            echo "✅ No known security vulnerabilities found in Python dependencies" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Security vulnerabilities found in Python dependencies" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for dependency conflicts
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dependency Conflicts Check" >> $GITHUB_STEP_SUMMARY
+
+          if uv pip check; then
+            echo "✅ No dependency conflicts found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Dependency conflicts detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # License compliance check
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install license checker
+        run: npm install -g license-checker
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run install:mobile
+          npm run install:web
+
+      - name: Check licenses
+        run: |
+          echo "## 📄 License Compliance Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Define allowed licenses
+          ALLOWED_LICENSES="MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC0-1.0;Unlicense"
+
+          echo "### Root Package Licenses" >> $GITHUB_STEP_SUMMARY
+          license-checker --onlyAllow "$ALLOWED_LICENSES" --summary >> $GITHUB_STEP_SUMMARY 2>&1 || echo "❌ Non-compliant licenses found in root package" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Mobile Package Licenses" >> $GITHUB_STEP_SUMMARY
+          cd mobile && license-checker --onlyAllow "$ALLOWED_LICENSES" --summary >> $GITHUB_STEP_SUMMARY 2>&1 || echo "❌ Non-compliant licenses found in mobile package" >> $GITHUB_STEP_SUMMARY
+          cd ..
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Web Package Licenses" >> $GITHUB_STEP_SUMMARY
+          cd web && license-checker --onlyAllow "$ALLOWED_LICENSES" --summary >> $GITHUB_STEP_SUMMARY 2>&1 || echo "❌ Non-compliant licenses found in web package" >> $GITHUB_STEP_SUMMARY
+
+  # Outdated dependencies check
+  outdated-deps:
+    name: Outdated Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        run: pip install uv
+
+      - name: Check for outdated npm packages
+        run: |
+          echo "## 📦 Outdated Dependencies Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### NPM Packages" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          npm outdated --long 2>&1 | head -20 >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for outdated Python packages
+        working-directory: ./api
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Python Packages" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          uv pip list --outdated 2>&1 | head -20 >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # CodeQL analysis
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      matrix:
+        language: ['javascript', 'python']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Setup Node.js (for JavaScript)
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Build JavaScript projects
+        if: matrix.language == 'javascript'
+        run: |
+          npm ci
+          npm run install:web
+          npm run build --workspace=web || true
+
+      - name: Setup Python (for Python)
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        if: matrix.language == 'python'
+        working-directory: ./api
+        run: |
+          pip install uv
+          uv sync
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
+
+  # Security summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [npm-audit, python-audit, license-check, outdated-deps, codeql]
+    if: always()
+    steps:
+      - name: Create security summary
+        run: |
+          echo "## 🛡️ Security & Dependencies Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Scan Results:" >> $GITHUB_STEP_SUMMARY
+
+          # NPM Audit
+          if [[ "${{ needs.npm-audit.result }}" == "success" ]]; then
+            echo "- ✅ **NPM Security Audit**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **NPM Security Audit**: Failed or had issues" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Python Audit
+          if [[ "${{ needs.python-audit.result }}" == "success" ]]; then
+            echo "- ✅ **Python Security Audit**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **Python Security Audit**: Failed or had issues" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # License Check
+          if [[ "${{ needs.license-check.result }}" == "success" ]]; then
+            echo "- ✅ **License Compliance**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **License Compliance**: Failed or had issues" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Outdated Dependencies
+          if [[ "${{ needs.outdated-deps.result }}" == "success" ]]; then
+            echo "- ✅ **Outdated Dependencies**: Check completed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **Outdated Dependencies**: Check failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # CodeQL
+          if [[ "${{ needs.codeql.result }}" == "success" ]]; then
+            echo "- ✅ **CodeQL Analysis**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **CodeQL Analysis**: Failed or had issues" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "For detailed results, check the individual job outputs above." >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,11 @@
+{
+  "name": "nuge-api",
+  "version": "1.0.0",
+  "description": "Nuge - Api for the Nuge app",
+  "private": true,
+  "scripts": {
+    "dev": "make run",
+    "build": "make serve",
+    "lint": "make lint"
+  }
+}

@@ -20,6 +20,27 @@ class BaseResponse(BaseModel):
     message: str = Field(..., description="Human-readable message describing the response")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp in UTC")
     request_id: Optional[str] = Field(None, description="Unique request identifier for tracking")
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
+    
+    def dict_with_encoders(self, exclude_none: bool = True, **kwargs) -> Dict[str, Any]:
+        """Convert to dict with proper datetime encoding."""
+        data = self.dict(exclude_none=exclude_none, **kwargs)
+        
+        # Apply datetime encoding manually
+        def encode_datetime(obj):
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            elif isinstance(obj, dict):
+                return {k: encode_datetime(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [encode_datetime(item) for item in obj]
+            return obj
+        
+        return encode_datetime(data)
 
 
 class SuccessResponse(BaseResponse, Generic[T]):
@@ -35,11 +56,6 @@ class SuccessResponse(BaseResponse, Generic[T]):
     success: bool = Field(True, description="Always True for success responses")
     data: Optional[T] = Field(None, description="Response payload data")
     meta: Optional[Dict[str, Any]] = Field(None, description="Additional response metadata")
-    
-    class Config:
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat()
-        }
 
 
 class ErrorDetail(BaseModel):
@@ -132,7 +148,8 @@ class ResponseSerializer:
         
         return JSONResponse(
             status_code=status_code,    
-            content=response_data.dict(exclude_none=True)
+            content=response_data.dict_with_encoders(exclude_none=True),
+            headers={"Content-Type": "application/json"}
         )
     
     @staticmethod
@@ -168,7 +185,7 @@ class ResponseSerializer:
         
         return JSONResponse(
             status_code=status_code,
-            content=response_data.dict(exclude_none=True)
+            content=response_data.dict_with_encoders(exclude_none=True)
         )
     
     @staticmethod
@@ -218,7 +235,7 @@ class ResponseSerializer:
         
         return JSONResponse(
             status_code=200,
-            content=response_data.dict(exclude_none=True)
+            content=response_data.dict_with_encoders(exclude_none=True)
         )
     
     @staticmethod
