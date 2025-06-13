@@ -10,7 +10,11 @@
     "api"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "./scripts/dev-setup.sh && turbo run dev",
+    "dev:setup": "./scripts/dev-setup.sh",
+    "dev:stop": "./scripts/dev-cleanup.sh",
+    "dev:clean": "./scripts/dev-cleanup.sh --clean",
+    "dev:only": "turbo run dev",
     "build": "turbo run build",
     "start": "turbo run start",
     "lint": "turbo run lint",

@@ -11,6 +11,10 @@
       "cache": false,
       "persistent": true
     },
+    "dev:setup": {
+      "cache": false,
+      "outputs": []
+    },
     "start": {
       "dependsOn": ["build"],
       "cache": false,
