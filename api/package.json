@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "make run",
-    "build": "make serve",
+    "build": "make lint",
     "lint": "make lint"
   }
 }
