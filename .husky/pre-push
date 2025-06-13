@@ -15,9 +15,40 @@ should_run_full_tests() {
   return 0
 }
 
-# Run quick linting check
+# Check if API environment is set up before running lint
+check_api_environment() {
+  if [ -d "api" ]; then
+    cd api
+    if [ ! -f "venv/bin/ruff" ] && [ ! -f ".venv/bin/ruff" ] && ! command -v ruff >/dev/null 2>&1; then
+      echo "⚠️ API Python environment not fully set up"
+      echo "🔧 To fix: cd api && uv sync"
+      cd ..
+      return 1
+    fi
+    cd ..
+  fi
+  return 0
+}
+
+# Run quick linting check with environment validation
 echo "🔧 Running quick lint check..."
-npm run lint:quick
+
+# Check if API environment is set up
+if git diff --name-only HEAD~1 | grep -q "api/"; then
+  if ! check_api_environment; then
+    echo ""
+    echo "⚠️ API environment issues detected, skipping API linting"
+    echo "🔧 Please run: cd api && uv sync"
+    echo "📝 Note: CI will catch any issues in the API workspace"
+    echo ""
+    # Run lint for other workspaces only
+    npm run lint:quick --workspace=web --workspace=mobile --workspace=shared
+  else
+    npm run lint:quick
+  fi
+else
+  npm run lint:quick
+fi
 
 if [ $? -ne 0 ]; then
   echo ""

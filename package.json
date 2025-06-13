@@ -44,6 +44,7 @@
     "install:mobile": "cd mobile && npm install",
     "install:web": "cd web && npm install",
     "install:api": "cd api && uv sync",
+    "setup:api": "./scripts/setup-api.sh",
     "prepare": "husky",
     "lint:quick": "turbo run lint --filter='[HEAD^1]'",
     "test:quick": "turbo run test --filter='[HEAD^1]'",
