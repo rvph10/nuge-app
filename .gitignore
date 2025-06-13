@@ -550,3 +550,5 @@ temp/
 # package-lock.json
 # yarn.lock 
 CLAUDE.md
+
+**/.claude/settings.local.json

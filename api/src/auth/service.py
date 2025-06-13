@@ -1,51 +1,92 @@
-from fastapi import HTTPException
+from typing import Optional
+from jose import jwt
+from datetime import datetime, timedelta
+from fastapi import HTTPException, status
 
-from src.auth.schemas import LoginRequest, SignUpRequest
-from src.supabase import create_supabase
+from ..supabase import supabase
+from ..config import settings
+from .schemas import UserCreate, UserLogin, UserResponse, Token
 
 
 class AuthService:
-    async def signup(
-        self,
-        signup_request: SignUpRequest,
-    ):
-        supabase = await create_supabase()
-
+    @staticmethod
+    async def register(user_data: UserCreate) -> UserResponse:
+        """
+        Register a new user with Supabase Auth.
+        """
         try:
-            await supabase.auth.sign_up(
-                dict(
-                    email=signup_request.email,
-                    password=signup_request.password,
-                    options=dict(
-                        data=dict(
-                            first_name=signup_request.first_name,
-                            last_name=signup_request.last_name,
-                            org_role=signup_request.org_role.value,
-                        ),
-                    ),
+            # Register user with Supabase Auth
+            auth_response = supabase.auth.sign_up({
+                "email": user_data.email,
+                "password": user_data.password,
+            })
+            
+            if not auth_response.user:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to register user",
                 )
-            )
-            return dict(
-                message="User successfully registered.",
-            )
+                
+            # Create user record in the users table
+            user_record = {
+                "id": auth_response.user.id,
+                "email": user_data.email,
+                "full_name": user_data.full_name,
+            }
+            
+            response = supabase.table("users").insert(user_record).execute()
+            
+            if not response.data:
+                # If user table insert fails, we should handle this (ideally delete the auth user)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="User created but failed to save user data",
+                )
+                
+            return UserResponse(**response.data[0])
+            
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Registration failed: {str(e)}",
+            )
 
-    async def login(self, login_request: LoginRequest):
-        supabase = await create_supabase()
-
+    @staticmethod
+    async def login(credentials: UserLogin) -> Token:
+        """
+        Authenticate a user and return JWT token.
+        """
         try:
-            response = await supabase.auth.sign_in_with_password(
-                dict(
-                    email=login_request.email,
-                    password=login_request.password,
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": credentials.email,
+                "password": credentials.password,
+            })
+            
+            if not auth_response.user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Incorrect email or password",
                 )
-            )
-            session = response.session
-            return dict(
-                message="Login successful",
-                access_token=session.access_token,
-                refresh_token=session.refresh_token,
-            )
+                
+            # Use the session token from Supabase auth
+            access_token = auth_response.session.access_token
+            
+            return Token(access_token=access_token)
+            
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed",
+            )
+    
+    @staticmethod
+    async def get_user_by_id(user_id: str) -> Optional[UserResponse]:
+        """
+        Get user details by ID.
+        """
+        response = supabase.table("users").select("*").eq("id", user_id).execute()
+        
+        if not response.data:
+            return None
+            
+        return UserResponse(**response.data[0])

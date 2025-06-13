@@ -1,16 +1,28 @@
-from pydantic import BaseModel
-
-from src.auth.enum import Role
+from pydantic import BaseModel, EmailStr, Field
 
 
-class SignUpRequest(BaseModel):
-    email: str
-    first_name: str
-    last_name: str
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    full_name: str = Field(..., min_length=2)
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
     password: str
-    org_role: Role
 
 
-class LoginRequest(BaseModel):
-    email: str
-    password: str
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class TokenPayload(BaseModel):
+    sub: str
+    exp: int
+
+
+class UserResponse(BaseModel):
+    id: str
+    email: EmailStr
+    full_name: str
