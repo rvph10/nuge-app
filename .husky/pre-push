@@ -1,0 +1,165 @@
+echo "🚀 Nuge Pre-Push Hook: Running comprehensive checks..."
+echo "🔍 This ensures your code won't break the CI/CD pipeline"
+echo ""
+
+# Get the current branch name
+BRANCH=$(git branch --show-current)
+echo "📊 Current branch: $BRANCH"
+echo ""
+
+# Function to check if we should run tests (skip for main/develop to avoid delays)
+should_run_full_tests() {
+  if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "develop" ]; then
+    return 1  # Don't run full tests for main/develop (they go through PR)
+  fi
+  return 0
+}
+
+# Run quick linting check
+echo "🔧 Running quick lint check..."
+npm run lint:quick
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ PUSH BLOCKED: Linting issues found!"
+  echo ""
+  echo "💡 What happened:"
+  echo "   • ESLint found issues in your changed files"
+  echo ""
+  echo "🔧 How to fix:"
+  echo "   1. Run: npm run lint -- --fix"
+  echo "   2. Fix remaining issues manually"
+  echo "   3. Commit the fixes"
+  echo "   4. Try pushing again"
+  echo ""
+  echo "⚡ To bypass this check (not recommended):"
+  echo "   git push --no-verify"
+  echo ""
+  exit 1
+fi
+
+# Run type checking
+echo "🔍 Running TypeScript type checking..."
+npm run type-check
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ PUSH BLOCKED: TypeScript errors found!"
+  echo ""
+  echo "💡 What happened:"
+  echo "   • TypeScript compilation errors detected"
+  echo ""
+  echo "🔧 How to fix:"
+  echo "   1. Fix the TypeScript errors shown above"
+  echo "   2. Verify with: npm run type-check"
+  echo "   3. Commit the fixes"
+  echo "   4. Try pushing again"
+  echo ""
+  echo "⚡ To bypass this check (not recommended):"
+  echo "   git push --no-verify"
+  echo ""
+  exit 1
+fi
+
+# Run build check to ensure everything compiles
+echo "🏗️ Running build check to ensure compilation..."
+npm run build
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ PUSH BLOCKED: Build failed!"
+  echo ""
+  echo "💡 What happened:"
+  echo "   • The project failed to build"
+  echo "   • This would cause the CI pipeline to fail"
+  echo ""
+  echo "🔧 How to fix:"
+  echo "   1. Fix the build errors shown above"
+  echo "   2. Test locally with: npm run build"
+  echo "   3. Commit the fixes"
+  echo "   4. Try pushing again"
+  echo ""
+  echo "⚡ To bypass this check (not recommended):"
+  echo "   git push --no-verify"
+  echo ""
+  exit 1
+fi
+
+# Run tests for feature branches
+if should_run_full_tests; then
+  echo "🧪 Running tests for feature branch..."
+  npm run test:quick
+  
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ PUSH BLOCKED: Tests failed!"
+    echo ""
+    echo "💡 What happened:"
+    echo "   • Some tests are failing"
+    echo "   • This would cause the CI pipeline to fail"
+    echo ""
+    echo "🔧 How to fix:"
+    echo "   1. Fix the failing tests"
+    echo "   2. Run tests locally: npm run test"
+    echo "   3. Commit the fixes"
+    echo "   4. Try pushing again"
+    echo ""
+    echo "⚡ To bypass this check (not recommended):"
+    echo "   git push --no-verify"
+    echo ""
+    exit 1
+  fi
+else
+  echo "⏭️ Skipping full tests for $BRANCH (will run in CI)"
+fi
+
+# API-specific checks if Python files changed
+if git diff --cached --name-only | grep -q "api/.*\.py$"; then
+  echo "🐍 Running Python API checks..."
+  
+  # Check if we're in the API directory or need to change to it
+  if [ -d "api" ]; then
+    cd api
+    echo "🔧 Running Python linting and type checking..."
+    
+    # Run Python linting
+    python -m black --check src/ || {
+      echo ""
+      echo "❌ PUSH BLOCKED: Python formatting issues!"
+      echo "🔧 Fix with: cd api && python -m black src/"
+      echo ""
+      exit 1
+    }
+    
+    python -m isort --check-only src/ || {
+      echo ""
+      echo "❌ PUSH BLOCKED: Python import sorting issues!"
+      echo "🔧 Fix with: cd api && python -m isort src/"
+      echo ""
+      exit 1
+    }
+    
+    python -m flake8 src/ || {
+      echo ""
+      echo "❌ PUSH BLOCKED: Python linting issues!"
+      echo "🔧 Fix the flake8 issues shown above"
+      echo ""
+      exit 1
+    }
+    
+    python -m mypy src/ || {
+      echo ""
+      echo "❌ PUSH BLOCKED: Python type checking issues!"
+      echo "🔧 Fix the mypy issues shown above"
+      echo ""
+      exit 1
+    }
+    
+    cd ..
+  fi
+fi
+
+echo ""
+echo "✅ All pre-push checks passed! 🎉"
+echo "🚀 Pushing to remote repository..."
+echo "" 

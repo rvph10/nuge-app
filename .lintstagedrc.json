@@ -1,0 +1,7 @@
+{
+  "mobile/**/*.{js,jsx,ts,tsx}": ["prettier --write"],
+  "web/**/*.{js,jsx,ts,tsx}": ["prettier --write"],
+  "shared/**/*.{js,jsx,ts,tsx}": ["prettier --write"],
+  "api/**/*.py": ["cd api && python -m black .", "cd api && python -m isort ."],
+  "*.{json,md,yaml,yml}": ["prettier --write"]
+}

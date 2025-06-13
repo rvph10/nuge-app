@@ -11,7 +11,7 @@ PIP := $(VENV)/bin/pip
 # Application settings
 APP_MODULE := src.main:app
 HOST := 0.0.0.0
-PORT := 8000
+PORT := 8080
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'

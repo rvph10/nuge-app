@@ -1,0 +1,62 @@
+echo "🔍 Nuge Pre-Commit Hook: Running code quality checks..."
+echo "📝 This will format, lint, and type-check only the files you're committing."
+echo ""
+
+# Run lint-staged to format and lint only staged files
+echo "🔧 Running lint-staged (formatting & linting)..."
+npx lint-staged
+
+# Check if lint-staged succeeded
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ COMMIT BLOCKED: Code quality issues found!"
+  echo ""
+  echo "💡 What happened:"
+  echo "   • Linting or formatting issues were detected in your staged files"
+  echo "   • Most issues have been auto-fixed and staged"
+  echo "   • Some issues may require manual attention"
+  echo ""
+  echo "🔧 How to fix:"
+  echo "   1. Review the changes that were automatically made"
+  echo "   2. Fix any remaining issues manually"
+  echo "   3. Add the fixed files: git add <files>"
+  echo "   4. Try committing again"
+  echo ""
+  echo "⚡ To bypass this check (not recommended):"
+  echo "   git commit --no-verify -m \"your message\""
+  echo ""
+  exit 1
+fi
+
+# Run quick type checking for changed TypeScript files only
+echo "🔍 Running type checking for modified TypeScript files..."
+
+# Check if there are any TypeScript files staged
+staged_ts_files=$(git diff --cached --name-only | grep -E '\.(ts|tsx)$' | head -5)
+
+if [ -n "$staged_ts_files" ]; then
+  echo "📝 TypeScript files found, running type check..."
+  
+  # Only run type-check for workspaces that have TypeScript files staged
+  if git diff --cached --name-only | grep -q "mobile/.*\.(ts|tsx)$"; then
+    echo "🔍 Type-checking mobile workspace..."
+    npm run type-check --workspace=mobile
+  fi
+  
+  if git diff --cached --name-only | grep -q "web/.*\.(ts|tsx)$"; then
+    echo "🔍 Type-checking web workspace..."
+    npm run type-check --workspace=web
+  fi
+  
+  if git diff --cached --name-only | grep -q "shared/.*\.(ts|tsx)$"; then
+    echo "🔍 Type-checking shared workspace..."
+    npm run type-check --workspace=shared
+  fi
+  
+else
+  echo "⏭️ No TypeScript files changed, skipping type check"
+fi
+
+echo ""
+echo "✅ All pre-commit checks passed! Proceeding with commit..."
+echo ""
