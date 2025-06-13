@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..auth.dependency import get_current_user
 from ..auth.schemas import UserResponse as AuthUserResponse
-from .schemas import UserResponse, UserUpdate, UserListResponse
+from .schemas import UserListResponse, UserResponse, UserUpdate
 from .service import UserService
 
 router = APIRouter()
@@ -63,7 +62,7 @@ async def update_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only update your own profile",
         )
-        
+
     updated_user = await UserService.update_user(user_id, user_data)
     if not updated_user:
         raise HTTPException(
@@ -89,7 +88,7 @@ async def delete_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only delete your own account",
         )
-        
+
     success = await UserService.delete_user(user_id)
     if not success:
         raise HTTPException(

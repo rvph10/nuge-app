@@ -1,5 +1,6 @@
+from typing import List, Optional
+
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
 
 
 class UserBase(BaseModel):
@@ -13,8 +14,8 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     id: str
-    
-    
+
+
 class UserListResponse(BaseModel):
     items: List[UserResponse]
     total: int

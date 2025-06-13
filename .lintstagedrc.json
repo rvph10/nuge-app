@@ -2,6 +2,6 @@
   "mobile/**/*.{js,jsx,ts,tsx}": ["prettier --write"],
   "web/**/*.{js,jsx,ts,tsx}": ["prettier --write"],
   "shared/**/*.{js,jsx,ts,tsx}": ["prettier --write"],
-  "api/**/*.py": ["cd api && python -m black .", "cd api && python -m isort ."],
+  "api/**/*.py": ["bash -c 'cd api && make format'"],
   "*.{json,md,yaml,yml}": ["prettier --write"]
 }

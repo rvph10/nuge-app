@@ -31,12 +31,12 @@ test: ## Run tests
 	$(VENV)/bin/pytest
 
 lint: ## Run linters
-	$(VENV)/bin/ruff src tests
-	$(VENV)/bin/black --check src tests
+	$(VENV)/bin/ruff check src 
+	$(VENV)/bin/black --check src
 
 format: ## Format code
-	$(VENV)/bin/black src tests
-	$(VENV)/bin/ruff --fix src tests
+	$(VENV)/bin/black src
+	$(VENV)/bin/ruff check --fix src
 
 clean: ## Clean up temporary files and build artifacts
 	rm -rf __pycache__

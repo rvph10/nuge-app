@@ -1,5 +1,5 @@
-from typing import List, Optional
-from pydantic import AnyHttpUrl, field_validator
+from typing import List
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
-    
+
     # Logging settings
     LOG_LEVEL: str = "INFO"
     LOG_TO_FILE: bool = True

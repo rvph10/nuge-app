@@ -1,14 +1,14 @@
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 from contextlib import asynccontextmanager
 
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from .config import settings
-from .supabase import supabase
-from .logging_config import setup_logging, get_logger
-from .middleware import logging_middleware, RequestTrackingMiddleware
 from .core.error_handlers import setup_error_handlers
 from .core.response import ResponseSerializer
+from .logging_config import get_logger, setup_logging
+from .middleware import RequestTrackingMiddleware, logging_middleware
 
 
 @asynccontextmanager
@@ -17,9 +17,9 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger = get_logger(__name__)
     logger.info("Starting Nuge API server", extra={"event_type": "startup"})
-    
+
     yield
-    
+
     # Shutdown: Cleanup and log shutdown
     logger.info("Shutting down Nuge API server", extra={"event_type": "shutdown"})
 
@@ -63,7 +63,7 @@ async def root():
     """Root endpoint providing API information."""
     return ResponseSerializer.success(
         data={"message": "Welcome to Nuge API. Check /docs for API documentation."},
-        message="API information retrieved successfully"
+        message="API information retrieved successfully",
     )
 
 
@@ -71,8 +71,7 @@ async def root():
 async def health_check():
     """Health check endpoint for monitoring."""
     return ResponseSerializer.success(
-        data={"status": "healthy", "version": "0.1.0"},
-        message="Service is healthy"
+        data={"status": "healthy", "version": "0.1.0"}, message="Service is healthy"
     )
 
 

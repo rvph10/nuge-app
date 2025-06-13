@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
-from .schemas import UserCreate, UserLogin, Token, UserResponse
-from .service import AuthService
 from .dependency import get_current_user
+from .schemas import Token, UserCreate, UserLogin, UserResponse
+from .service import AuthService
 
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
 async def register(user_data: UserCreate):
     """
     Register a new user.

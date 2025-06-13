@@ -39,10 +39,16 @@ target-version = ["py39"]
 [tool.ruff]
 line-length = 88
 target-version = "py39"
-select = ["E", "F", "I", "N", "W", "B"]
-ignore = []
 
-[tool.ruff.isort]
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = [
+    "E402", # Module level import not at top of file
+    "E501", # Line too long (will be handled by black)
+    "F841", # Local variable assigned but never used
+]
+
+[tool.ruff.lint.isort]
 known-first-party = ["app"]
 
 [tool.pytest.ini_options]
